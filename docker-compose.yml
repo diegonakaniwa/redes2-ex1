@@ -1,18 +1,38 @@
 services:
-  web:
-    image: php:apache
+  php-apache:
+    container_name: php-apache
+    build:
+      dockerfile: php-dockerfile
+      context: .
+    restart: always
+    volumes:
+      - './html:/var/www/html'
     ports:
-      - "80:80"
-    volumes:
-      - ./html:/var/www/html
+      - 80:80
     depends_on:
-      - mysql
-  mysql:
-    image: mysql:latest
+      - postgres
     environment:
-      MYSQL_ROOT_PASSWORD: db-password
-      MYSQL_DATABASE: db
-      MYSQL_USER: user
-      MYSQL_PASSWORD: user-password
+      DB_HOST: postgres
+      DB_NAME: postgres
+      DB_USER: postgres
+      DB_PASSWORD: password
+    networks:
+      - containers
+  postgres:
+    container_name: postgres
+    image: postgres
+    restart: always
     volumes:
-      - ./mysql-data:/var/lib/mysql
+      - './postgres-db-volume:/var/lib/postgresql/data'
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: password
+    networks:
+      - containers
+networks:
+  containers:
+    name: containers
+    driver: bridge
